@@ -10,6 +10,6 @@ License: Apache License 2.0
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.0.2
-Imports: shiny, shinycustomloader, highcharter, shinyWidgets, data.table, shinydashboard, deSolve
+Imports: shiny, shinycustomloader, highcharter, shinyWidgets, data.table, shinydashboard, deSolve, pracma
 URL: https://github.com/zarathucorp/kweatherdashboard
 BugReports: https://github.com/zarathucorp/kweatherdashboard/issues

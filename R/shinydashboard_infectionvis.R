@@ -48,6 +48,7 @@ fluODE <- function(time, state, params) {
 #' @importFrom shinycustomloader withLoader
 #' @importFrom shinydashboard box
 #' @importFrom data.table fread
+#' @importFrom pracma lsqnonlin
 #' @import shiny 
 #' @import shinydashboard
 #' @import highcharter
@@ -95,7 +96,11 @@ infectionvis <- function(max.filesize = 2048){
         # First tab content
         tabItem(tabName = "dashboard",
                 fluidRow(
-                  box(title = "Parameters", status = "primary", solidHeader = TRUE, collapsible = T, uiOutput("parameter"), width = 12) 
+                  box(title = "Parameters", status = "primary", solidHeader = TRUE, collapsible = T, uiOutput("parameter"), width = 12)
+                ),
+                fluidRow(
+                  withMathJax(),
+                  valueBoxOutput("estbeta")
                 ),
                 fluidRow(
                   box(title = "Estimation", status = "primary", solidHeader = TRUE, collapsible = T,
@@ -107,11 +112,11 @@ infectionvis <- function(max.filesize = 2048){
     )
   )
   
-
+  
   
   server <- function(input, output, session){
     
-
+    
     userFile <- eventReactive(input$file, {
       # If no file is selected, don't do anything
       #validate(need(input$file, message = FALSE))
@@ -140,7 +145,7 @@ infectionvis <- function(max.filesize = 2048){
     output$parameter <- renderUI({
       tagList(
         withMathJax(),
-        column(12/7, numericInput("param_beta", '$$\\beta$$', value = 0.4726, min = 0, step = 0.01)),
+        column(12/7, numericInput("param_beta", '$$\\beta_{ini}$$', value = 0.1, min = 0, step = 0.01)),
         column(12/7, numericInput("param_delta", "$$\\delta$$", value = 1/2, min = 0)),
         column(12/7, numericInput("param_p", "$$p$$", value = 2/3, min = 0)),
         column(12/7, numericInput("param_kappa", "$$\\kappa$$", value = 1.9, min = 0)),
@@ -155,26 +160,47 @@ infectionvis <- function(max.filesize = 2048){
     
     out.ode <- reactive({
       req(incidata())
-      params  <- c(beta = input$param_beta ,delta = input$param_delta, p = input$param_p, kappa = input$param_kappa, alpha = input$param_alpha, eta = input$param_eta, q = input$param_q)
+      params  <- c(delta = input$param_delta, p = input$param_p, kappa = input$param_kappa, alpha = input$param_alpha, eta = input$param_eta, q = input$param_q)
+      
       init <-  c(S = input$ini_S, E = input$ini_E, I = input$ini_I, A = input$ini_A, R = input$ini_R)
-      times   <- seq(0, 141, by = 1)
-      output <- deSolve::ode(y = init, times = times, func = fluODE, parms = params)
+      times   <- seq(0, length(incidata()$V1)-1, by = 1)
+      ftemp <- function(x) {
+        modelparams <- c(params, beta = x)
+        tempoutput <- as.data.frame(ode(y = init, times = times, func = fluODE, parms = modelparams))
+        return(abs(cumsum(tempoutput$E * input$param_p * input$param_kappa)-incidata()$V1))
+      }
+      
+      fitresult <- pracma::lsqnonlin(ftemp , input$param_beta)
+      beta <- fitresult$x   
+      
+      ## solve the model
+      params = c(beta = beta, params)
+      output <- ode(y = init, times = times, func = fluODE, parms = params)
       output <- as.data.frame(output)
       ## adding cumulative incidence
       output$cuminci <- cumsum(output$E * input$param_p * input$param_kappa)
-      return(output)
+      return(list(beta = beta, output = output))
     })
     
+    output$estbeta <- renderValueBox({
+      req(input$param_beta)
+      valueBox(
+        out.ode()$beta, "Estimated beta", icon = icon("thumbs-up", lib = "glyphicon"),
+        color = "yellow"
+      )
+    })
     
     output$chartEstimation <- renderHighchart({
+      out.ode <- out.ode()$output
       highchart() %>% 
-        hc_xAxis(time = out.ode()$time) %>% 
+        hc_xAxis(time = out.ode$time) %>% 
         hc_add_series(name = "Data", data = incidata()$V1, type = "scatter") %>% 
-        hc_add_series(name = "Cumulative incidence", data = out.ode()$cuminci) %>% 
+        hc_add_series(name = "Cumulative incidence", data = out.ode$cuminci) %>% 
         hc_exporting(enabled = T) %>% 
         hc_tooltip(valueDecimals = 0)
       
     })
+    
     
     
     session$onSessionEnded(function() {
