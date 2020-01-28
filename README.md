@@ -1,2 +1,2 @@
 # infectionvis
-RStudio addin - infection simulation visualization
+RStudio addin - Shinydashboard for Infection Simulation

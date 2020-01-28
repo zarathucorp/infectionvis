@@ -1,0 +1,9 @@
+^kweatherdashboard\.Rproj$
+^\.Rproj\.user$
+^\.github
+^LICENSE$
+^cran-comments\.md$
+^CRAN-RELEASE$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$

@@ -1,0 +1,15 @@
+Package: infectionvis
+Title: 'Shinydashboard' for Infection Simulation
+Version: 0.0.0.9000
+Date: 2020-11-09
+Authors@R: c(person("Jinseob", "Kim", email = "jinseob2kim@gmail.com", role = c("aut", "cre"),  comment = c(ORCID = "0000-0002-9403-605X")),
+             person("Zarathu", role = c("cph", "fnd")))
+Description: 'Shinydashboard' for Infection Simulation.
+Depends: R (>= 3.5.0)
+License: Apache License 2.0 
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.0.2
+Imports: shiny, shinycustomloader, highcharter, shinyBS, lubridate, rmarkdown, zip, shinyWidgets, stats, shinydashboard, deSolve
+URL: https://github.com/zarathucorp/kweatherdashboard
+BugReports: https://github.com/zarathucorp/kweatherdashboard/issues

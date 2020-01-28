@@ -1,0 +1,4 @@
+Name: Shinydashboard for Infection Simulation
+Description: RStudio addin- Shinydashboard for Infection Simulation
+Binding: infectionvis
+Interactive: true
