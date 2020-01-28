@@ -11,7 +11,6 @@
 #' params  <- c(beta = 0.4726, delta = 1/2, p = 2/3, kappa = 1.9, alpha = 1/6, eta = 1/6, q = 1/2)
 #' times   <- seq(0, 141, by = 1)
 #' deSolve::ode(y = init, times = times, func = fluODE, parms = params)
-#' }
 #' @rdname fluODE
 #' @export 
 
@@ -48,6 +47,7 @@ fluODE <- function(time, state, params) {
 #' @importFrom deSolve ode
 #' @importFrom shinycustomloader withLoader
 #' @importFrom shinydashboard box
+#' @importFrom data.table fread
 #' @import shiny 
 #' @import shinydashboard
 #' @import highcharter
@@ -177,7 +177,9 @@ infectionvis <- function(max.filesize = 2048){
     })
     
     
-    
+    session$onSessionEnded(function() {
+      stopApp()
+    })
     
   }
   
